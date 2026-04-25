@@ -26,3 +26,43 @@ export async function getEmployeeById(employeeId) {
 
   return data;
 }
+
+export async function getAllEmployees() {
+  const { data, error } = await supabase
+    .from("employees")
+    .select(
+      `
+      *,
+      departments(id, name),
+      locations(id, name)
+    `,
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch employees: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function updateEmployee(employeeId, employeeData) {
+  const { data, error } = await supabase
+    .from("employees")
+    .update(employeeData)
+    .eq("id", employeeId)
+    .select(
+      `
+      *,
+      departments(id, name),
+      locations(id, name)
+    `,
+    )
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update employee: ${error.message}`);
+  }
+
+  return data;
+}

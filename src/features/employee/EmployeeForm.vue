@@ -129,9 +129,10 @@ async function handleSubmit() {
 
     successMessage.value = "Employee profile completed. Redirecting...";
 
-    setTimeout(() => {
-      router.push({ name: "profile" });
-    }, 800);
+    //todo：redirect to employee profile page after a short delay to show success message
+    // setTimeout(() => {
+    //   router.push({ name: "profile" });
+    // }, 800);
   } catch (error) {
     errorMessage.value =
       error instanceof Error

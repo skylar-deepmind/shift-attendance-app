@@ -38,6 +38,14 @@ const router = createRouter({
       },
     },
     {
+      path: "/employee-management",
+      name: "employee-management",
+      component: () => import("@/views/EmployeeManagementView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/employee-form",
       name: "employee-form",
       component: () => import("@/views/EmployeeFormView.vue"),
@@ -81,7 +89,9 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.guestOnly && user) {
-    return hasCompletedEmployee ? { name: "profile" } : { name: "employee-form" };
+    return hasCompletedEmployee
+      ? { name: "profile" }
+      : { name: "employee-form" };
   }
 
   if (to.meta.requiresAuth && !user) {
