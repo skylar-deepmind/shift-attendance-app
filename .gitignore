@@ -39,3 +39,4 @@ __screenshots__/
 *.timestamp-*-*.mjs
 项目设计.md
 数据库描述.md
+.env
