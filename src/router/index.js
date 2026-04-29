@@ -46,9 +46,26 @@ const router = createRouter({
       },
     },
     {
+      path: "/shifts",
+      name: "shifts",
+      component: () => import("@/views/ShiftManagementView.vue"),
+      meta: {
+        requiresAuth: true,
+        requiresCompletedEmployee: true,
+      },
+    },
+    {
       path: "/employee-form",
       name: "employee-form",
       component: () => import("@/views/EmployeeFormView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/test",
+      name: "test",
+      component: () => import("@/views/TestView.vue"),
       meta: {
         requiresAuth: true,
       },
