@@ -8,12 +8,7 @@
     <legend class="fieldset-legend">Login</legend>
 
     <label class="label">Email</label>
-    <Field
-      name="email"
-      type="email"
-      class="input w-full"
-      placeholder="Email"
-    />
+    <Field name="email" type="email" class="input w-full" placeholder="Email" />
     <ErrorMessage name="email" class="text-error text-sm mt-1" />
 
     <label class="label">Password</label>
@@ -30,7 +25,10 @@
     </p>
 
     <button class="btn btn-neutral mt-4" type="submit" :disabled="isSubmitting">
-      <span v-if="isSubmitting" class="loading loading-spinner loading-sm"></span>
+      <span
+        v-if="isSubmitting"
+        class="loading loading-spinner loading-sm"
+      ></span>
       <span>{{ isSubmitting ? "Logging in..." : "Login" }}</span>
     </button>
 
@@ -75,7 +73,9 @@ async function handleLogin(values) {
       return;
     }
 
-    router.push({ name: "profile" });
+    // router.push({ name: "profile" });
+    //todo 后续改成根据角色来跳转不同的页面
+    router.push({ name: "employee-management" });
   } catch (error) {
     errorMessage.value = error.message;
   }

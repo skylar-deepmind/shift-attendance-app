@@ -30,14 +30,15 @@ export async function getEmployeeById(employeeId) {
 export async function getAllEmployees() {
   const { data, error } = await supabase
     .from("employees")
-    // .select(
-    //   `
-    //   *,
-    //   departments(id, name),
-    //   locations(id, name)
-    // `,
-    // )
-    .select("*")
+    //联表查询部门和地点信息
+    .select(
+      `
+      *,
+      departments(id, name),
+      locations(id, name)
+    `,
+    )
+    // .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {

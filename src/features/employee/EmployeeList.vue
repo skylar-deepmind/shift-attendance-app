@@ -33,13 +33,13 @@
             <td>
               <div class="font-medium">{{ employee.name }}</div>
               <div class="text-xs text-base-content/60">
-                {{ employee.phone || "No phone" }}
+                {{ employee.phone }}
               </div>
             </td>
             <td>{{ employee.email }}</td>
-            <td>{{ employee.departments?.name || "Unassigned" }}</td>
-            <td>{{ employee.locations?.name || "Unassigned" }}</td>
-            <td>{{ employee.position || "Not set" }}</td>
+            <td>{{ employee.departments?.name }}</td>
+            <td>{{ employee.locations?.name }}</td>
+            <td>{{ employee.position }}</td>
             <td>{{ formatEmploymentType(employee.employment_type) }}</td>
             <td>
               <span class="badge" :class="statusClassMap[employee.status]">
@@ -259,7 +259,7 @@ const props = defineProps({
     required: true,
   },
 });
-
+console.log("employees", props.employees);
 const editDialogRef = ref(null);
 const isSaving = ref(false);
 const formError = ref("");
