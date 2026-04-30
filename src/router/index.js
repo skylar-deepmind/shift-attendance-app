@@ -63,6 +63,14 @@ const router = createRouter({
       },
     },
     {
+      path: "/clock",
+      name: "clock",
+      component: () => import("@/views/ClockView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: "/test",
       name: "test",
       component: () => import("@/views/TestView.vue"),
@@ -105,6 +113,8 @@ router.beforeEach(async (to) => {
     }
   }
 
+  // Redirect authenticated users away from guest-only pages
+  //todo: this logic is a bit redundant with the employee form checks below, consider refactoring
   if (to.meta.guestOnly && user) {
     return hasCompletedEmployee
       ? { name: "profile" }

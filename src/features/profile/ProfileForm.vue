@@ -1,52 +1,5 @@
-<script setup lang="ts">
-import { ref, reactive } from "vue";
-
-// 定义表单数据类型
-interface FormData {
-  username: string;
-  category: string;
-  bio: string;
-  notifications: boolean;
-  gender: "male" | "female" | "other" | "";
-  avatar: File | null;
-  agreement: boolean;
-}
-
-// 初始化响应式数据
-const formData = reactive<FormData>({
-  username: "",
-  category: "",
-  bio: "",
-  notifications: true,
-  gender: "",
-  avatar: null,
-  agreement: false,
-});
-
-const isSubmitting = ref(false);
-
-// 处理文件上传
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    formData.avatar = target.files[0];
-  }
-};
-
-// 提交表单
-const handleSubmit = async () => {
-  isSubmitting.value = true;
-  // 模拟异步请求
-  console.log("提交的数据：", formData);
-
-  setTimeout(() => {
-    isSubmitting.value = false;
-    alert("提交成功！");
-  }, 1500);
-};
-</script>
-
 <template>
+  <!-- TODO Profile Form should be managed by admin roles, refactor this later -->
   <div class="flex justify-center items-center min-h-screen bg-base-200 p-4">
     <div class="card w-full max-w-2xl bg-base-100 shadow-xl">
       <div class="card-body">
@@ -180,3 +133,50 @@ const handleSubmit = async () => {
 <style scoped>
 /* 这里可以根据需要添加额外的微调样式 */
 </style>
+<script setup lang="ts">
+import { ref, reactive } from "vue";
+
+// 定义表单数据类型
+interface FormData {
+  username: string;
+  category: string;
+  bio: string;
+  notifications: boolean;
+  gender: "male" | "female" | "other" | "";
+  avatar: File | null;
+  agreement: boolean;
+}
+
+// 初始化响应式数据
+const formData = reactive<FormData>({
+  username: "",
+  category: "",
+  bio: "",
+  notifications: true,
+  gender: "",
+  avatar: null,
+  agreement: false,
+});
+
+const isSubmitting = ref(false);
+
+// 处理文件上传
+const handleFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    formData.avatar = target.files[0];
+  }
+};
+
+// 提交表单
+const handleSubmit = async () => {
+  isSubmitting.value = true;
+  // 模拟异步请求
+  console.log("提交的数据：", formData);
+
+  setTimeout(() => {
+    isSubmitting.value = false;
+    alert("提交成功！");
+  }, 1500);
+};
+</script>
