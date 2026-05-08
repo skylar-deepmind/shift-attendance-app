@@ -3,11 +3,19 @@
     <NavBar title="请假审批" />
 
     <div class="mx-auto max-w-none px-4 py-6 lg:px-6">
-      <section class="rounded-box border border-base-300 bg-base-100 p-5 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <section
+        class="rounded-box border border-base-300 bg-base-100 p-5 shadow-sm"
+      >
+        <div
+          class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+        >
           <div>
-            <h1 class="text-2xl font-semibold text-base-content">管理员审批面板</h1>
-            <p class="mt-1 text-sm text-base-content/60">集中处理请假申请，审核结果会直接写回申请记录。</p>
+            <h1 class="text-2xl font-semibold text-base-content">
+              管理员审批面板
+            </h1>
+            <p class="mt-1 text-sm text-base-content/60">
+              集中处理请假申请，审核结果会直接写回申请记录。
+            </p>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
@@ -22,7 +30,9 @@
               </select>
             </label>
 
-            <button class="btn" type="button" @click="loadRequests">刷新</button>
+            <button class="btn" type="button" @click="loadRequests">
+              刷新
+            </button>
           </div>
         </div>
 
@@ -57,20 +67,26 @@
             <tbody>
               <tr v-for="request in requests" :key="request.id">
                 <td>
-                  <div class="font-medium">{{ request.employees?.name || "未知员工" }}</div>
+                  <div class="font-medium">
+                    {{ request.employees?.name || "未知员工" }}
+                  </div>
                   <div class="text-xs text-base-content/60">
                     {{ request.employees?.employee_code || "无编号" }}
                   </div>
                 </td>
                 <td>{{ formatLeaveType(request.leave_type) }}</td>
-                <td>{{ formatDateRange(request.start_date, request.end_date) }}</td>
+                <td>
+                  {{ formatDateRange(request.start_date, request.end_date) }}
+                </td>
                 <td>{{ request.duration_days }}</td>
                 <td>
                   <span class="badge" :class="statusClass(request.status)">
                     {{ formatStatus(request.status) }}
                   </span>
                 </td>
-                <td class="max-w-xs whitespace-pre-wrap text-sm text-base-content/75">
+                <td
+                  class="max-w-xs whitespace-pre-wrap text-sm text-base-content/75"
+                >
                   {{ request.reason || "无说明" }}
                 </td>
                 <td>
@@ -84,7 +100,10 @@
                     <div class="flex gap-2">
                       <button
                         class="btn btn-sm btn-success"
-                        :disabled="request.status !== 'pending' || submittingId === request.id"
+                        :disabled="
+                          request.status !== 'pending' ||
+                          submittingId === request.id
+                        "
                         type="button"
                         @click="reviewRequest(request, 'approved')"
                       >
@@ -92,7 +111,10 @@
                       </button>
                       <button
                         class="btn btn-sm btn-error"
-                        :disabled="request.status !== 'pending' || submittingId === request.id"
+                        :disabled="
+                          request.status !== 'pending' ||
+                          submittingId === request.id
+                        "
                         type="button"
                         @click="reviewRequest(request, 'rejected')"
                       >
@@ -111,93 +133,25 @@
 </template>
 
 <script setup>
-import { getCurrentProfile } from "@/services/apiAuth.js";
+import { useLeaveApprovalPage } from "@/features/leave/useLeaveApprovalPage.js";
 import {
-  getLeaveRequests,
-  updateLeaveRequest,
-} from "@/services/database_crud/apiLeaveRequests.js";
+  formatLeaveStatus,
+  formatLeaveType,
+  getLeaveStatusBadgeClass,
+} from "@/shared/constants/leave.js";
+import { formatDateRange } from "@/shared/utils/date.js";
 import NavBar from "@/ui/NavBar.vue";
-import { onMounted, ref, watch } from "vue";
+const {
+  errorMessage,
+  isLoading,
+  loadRequests,
+  requests,
+  reviewComments,
+  reviewRequest,
+  selectedStatus,
+  submittingId,
+} = useLeaveApprovalPage();
 
-const isLoading = ref(true);
-const errorMessage = ref("");
-const selectedStatus = ref("pending");
-const submittingId = ref("");
-const requests = ref([]);
-const reviewComments = ref({});
-const currentProfile = ref(null);
-
-onMounted(async () => {
-  currentProfile.value = await getCurrentProfile();
-  await loadRequests();
-});
-
-watch(selectedStatus, async () => {
-  await loadRequests();
-});
-
-async function loadRequests() {
-  isLoading.value = true;
-  errorMessage.value = "";
-
-  try {
-    requests.value = await getLeaveRequests({
-      status: selectedStatus.value || undefined,
-    });
-  } catch (error) {
-    errorMessage.value =
-      error instanceof Error ? error.message : "加载审批列表失败。";
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function reviewRequest(request, status) {
-  submittingId.value = request.id;
-  errorMessage.value = "";
-
-  try {
-    const updated = await updateLeaveRequest(request.id, {
-      status,
-      reviewer_id: currentProfile.value?.id || null,
-      reviewed_at: new Date().toISOString(),
-      review_comment: reviewComments.value[request.id] || null,
-    });
-
-    requests.value = requests.value.map((item) =>
-      item.id === updated.id ? updated : item,
-    );
-  } catch (error) {
-    errorMessage.value =
-      error instanceof Error ? error.message : "提交审批失败。";
-  } finally {
-    submittingId.value = "";
-  }
-}
-
-function formatLeaveType(value) {
-  if (value === "annual") return "年假";
-  if (value === "sick") return "病假";
-  if (value === "personal") return "事假";
-  if (value === "unpaid") return "无薪假";
-  return "其他";
-}
-
-function formatStatus(value) {
-  if (value === "approved") return "已通过";
-  if (value === "rejected") return "已驳回";
-  if (value === "cancelled") return "已撤回";
-  return "待审批";
-}
-
-function statusClass(value) {
-  if (value === "approved") return "badge-success";
-  if (value === "rejected") return "badge-error";
-  if (value === "cancelled") return "badge-neutral";
-  return "badge-warning";
-}
-
-function formatDateRange(startDate, endDate) {
-  return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-}
+const formatStatus = formatLeaveStatus;
+const statusClass = getLeaveStatusBadgeClass;
 </script>

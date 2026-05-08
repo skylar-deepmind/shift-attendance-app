@@ -82,6 +82,11 @@
 <script setup>
 import { getCurrentProfile, getCurrentUser, resolveProfileHomeRoute } from "@/services/apiAuth.js";
 import { getEmployeeById } from "@/services/database_crud/apiEmployee.js";
+import {
+  formatEmployeeStatus,
+  formatEmploymentType,
+} from "@/shared/constants/employee.js";
+import { formatDate } from "@/shared/utils/date.js";
 import NavBar from "@/ui/NavBar.vue";
 import { computed, defineComponent, h, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -130,27 +135,7 @@ function goPrimary() {
   router.push(resolveProfileHomeRoute(profile.value));
 }
 
-function formatDate(value) {
-  if (!value) {
-    return "未设置";
-  }
-
-  return new Date(value).toLocaleDateString();
-}
-
-function formatEmploymentType(type) {
-  if (type === "full_time") return "全职";
-  if (type === "part_time") return "兼职";
-  if (type === "contract") return "合同工";
-  return type || "未设置";
-}
-
-function formatStatus(status) {
-  if (status === "active") return "在职";
-  if (status === "inactive") return "停用";
-  if (status === "resigned") return "离职";
-  return status || "未设置";
-}
+const formatStatus = formatEmployeeStatus;
 
 const InfoField = defineComponent({
   name: "InfoField",

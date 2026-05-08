@@ -231,6 +231,12 @@
 </template>
 
 <script setup>
+import {
+  EMPLOYEE_STATUS_BADGE_CLASSES,
+  formatEmployeeStatus,
+  formatEmploymentType,
+} from "@/shared/constants/employee.js";
+import { formatDate } from "@/shared/utils/date.js";
 import { reactive, ref } from "vue";
 
 const props = defineProps({
@@ -276,30 +282,8 @@ const form = reactive({
   joined_at: "",
 });
 
-const statusClassMap = {
-  active: "badge-success",
-  inactive: "badge-warning",
-  resigned: "badge-neutral",
-};
-
-function formatEmploymentType(type) {
-  if (type === "full_time") return "Full-time";
-  if (type === "part_time") return "Part-time";
-  if (type === "contract") return "Contract";
-  return type || "Unknown";
-}
-
-function formatStatus(status) {
-  if (status === "active") return "Active";
-  if (status === "inactive") return "Inactive";
-  if (status === "resigned") return "Resigned";
-  return status || "Unknown";
-}
-
-function formatDate(value) {
-  if (!value) return "Not set";
-  return new Date(value).toLocaleDateString();
-}
+const statusClassMap = EMPLOYEE_STATUS_BADGE_CLASSES;
+const formatStatus = formatEmployeeStatus;
 
 function openEditModal(employee) {
   form.id = employee.id;

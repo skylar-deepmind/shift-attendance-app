@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import {
   ensureProfileEmployeeId,
   getCurrentProfile,
@@ -15,24 +15,6 @@ import { updateProfile } from "@/services/database_crud/apiProfile.js";
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
-interface FormData {
-  employee_code: string;
-  name: string;
-  email: string;
-  phone: string;
-  department_id: string;
-  location_id: string;
-  position: string;
-  employment_type: "full_time" | "part_time" | "contract";
-  status: "active" | "inactive" | "resigned";
-  joined_at: string;
-}
-
-interface OptionItem {
-  id: string;
-  name: string;
-}
-
 const router = useRouter();
 const isPageLoading = ref(true);
 const isSubmitting = ref(false);
@@ -40,11 +22,11 @@ const errorMessage = ref("");
 const successMessage = ref("");
 const currentProfileId = ref("");
 const reservedEmployeeId = ref("");
-const departments = ref<OptionItem[]>([]);
-const locations = ref<OptionItem[]>([]);
-const currentProfile = ref<any>(null);
+const departments = ref([]);
+const locations = ref([]);
+const currentProfile = ref(null);
 
-const formData = reactive<FormData>({
+const formData = reactive({
   employee_code: "",
   name: "",
   email: "",

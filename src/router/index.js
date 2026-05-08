@@ -1,10 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import {
-  getCurrentProfile,
-  getCurrentUser,
-  hasEmployeeRecord,
-  resolveProfileHomeRoute,
-} from "@/services/apiAuth.js";
+  getRouteAccessContext,
+  resolveRouteGuard,
+} from "@/features/auth/authGuard.js";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -130,64 +128,8 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  let user = null;
-
-  try {
-    user = await getCurrentUser();
-  } catch (error) {
-    user = null;
-  }
-
-  let profile = null;
-  let hasCompletedEmployee = false;
-
-  if (user) {
-    try {
-      profile = await getCurrentProfile();
-      hasCompletedEmployee = await hasEmployeeRecord(profile?.employee_id);
-    } catch (error) {
-      profile = null;
-      hasCompletedEmployee = false;
-    }
-  }
-
-  // Redirect authenticated users away from guest-only pages
-  //todo: this logic is a bit redundant with the employee form checks below, consider refactoring
-  if (to.meta.guestOnly && user) {
-    return hasCompletedEmployee
-      ? resolveProfileHomeRoute(profile)
-      : { name: "employee-form" };
-  }
-
-  if (to.meta.requiresAuth && !user) {
-    return { name: "login" };
-  }
-
-  if (!user) {
-    return true;
-  }
-
-  if (
-    to.name !== "employee-form" &&
-    !hasCompletedEmployee &&
-    to.meta.requiresAuth
-  ) {
-    return { name: "employee-form" };
-  }
-
-  if (to.name === "employee-form" && hasCompletedEmployee) {
-    return resolveProfileHomeRoute(profile);
-  }
-
-  if (to.meta.requiresCompletedEmployee && !hasCompletedEmployee) {
-    return { name: "employee-form" };
-  }
-
-  if (to.meta.requiresAdmin && profile?.role !== "admin") {
-    return { name: "403" };
-  }
-
-  return true;
+  const context = await getRouteAccessContext();
+  return resolveRouteGuard(to, context);
 });
 
 export default router;

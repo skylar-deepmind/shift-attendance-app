@@ -66,41 +66,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { getCurrentUser } from "@/services/apiAuth.js";
 import { insertAttendanceRecord } from "@/services/database_crud/apiAttendanceRecords.js";
 import { getShiftsInRange } from "@/services/database_crud/apiShift.js";
 import { ref, onMounted, onUnmounted } from "vue";
-
-type AttendanceStatus =
-  | "normal"
-  | "absence"
-  | "late"
-  | "early_leave"
-  | "late_and_early_leave"
-  | "missing_clock_out";
-
-type AttendanceRecord = {
-  employee_id: string;
-  shift_id: string;
-  work_date: string;
-  clock_in_at: string;
-  clock_out_at: string;
-  break_minutes: number;
-  work_minutes: number;
-  status: AttendanceStatus;
-  note: string;
-};
-
-type Shift = {
-  id: string;
-  employee_id: string;
-  work_date: string;
-  start_time: string;
-  end_time: string;
-  break_minutes: number | null;
-  status?: string;
-};
 
 // 模拟状态：0-未打卡, 1-已上班, 2-已下班
 const status = ref(0);
@@ -113,12 +83,12 @@ const currentDateLabel = ref(
     weekday: "long",
   }),
 );
-const logs = ref<{ time: string; type: string }[]>([]);
-const todayShift = ref<Shift | null>(null);
+const logs = ref([]);
+const todayShift = ref(null);
 const canClockToday = ref(true);
 const shiftHint = ref("正在加载今日排班...");
 const submitting = ref(false);
-const record = ref<AttendanceRecord>({
+const record = ref({
   employee_id: "", // UUID 格式
   shift_id: "", // UUID 格式
   work_date: "", // Date 格式 (YYYY-MM-DD)
@@ -132,26 +102,26 @@ const record = ref<AttendanceRecord>({
 const employeeName = ref("未知用户");
 const currentEmployeeId = ref("");
 
-const formatWorkDate = (date: Date) => date.toISOString().slice(0, 10);
+const formatWorkDate = (date) => date.toISOString().slice(0, 10);
 
-const calculateWorkMinutes = (clockInAt: string, clockOutAt: string) => {
+const calculateWorkMinutes = (clockInAt, clockOutAt) => {
   const clockInTime = new Date(clockInAt).getTime();
   const clockOutTime = new Date(clockOutAt).getTime();
   const diffMs = Math.max(clockOutTime - clockInTime, 0);
   return Math.floor(diffMs / 60000);
 };
 
-const formatDateTimeByShift = (workDate: string, hhmmss: string) => {
+const formatDateTimeByShift = (workDate, hhmmss) => {
   const safeTime = hhmmss?.slice(0, 8) || "00:00:00";
   return new Date(`${workDate}T${safeTime}`);
 };
 
 const getFinalAttendanceStatus = (
-  clockInAt: Date,
-  clockOutAt: Date,
-  shiftStartAt: Date,
-  shiftEndAt: Date,
-): AttendanceStatus => {
+  clockInAt,
+  clockOutAt,
+  shiftStartAt,
+  shiftEndAt,
+) => {
   const isLate = clockInAt.getTime() > shiftStartAt.getTime();
   const isEarlyLeave = clockOutAt.getTime() < shiftEndAt.getTime();
 
@@ -170,7 +140,7 @@ const getFinalAttendanceStatus = (
   return "normal";
 };
 
-const resolveShiftHint = (shift: Shift | null) => {
+const resolveShiftHint = (shift) => {
   if (!shift) {
     return "今日无排班，无需打卡";
   }
@@ -181,7 +151,7 @@ const resolveShiftHint = (shift: Shift | null) => {
   )}`;
 };
 
-const loadTodayShift = async (employeeId: string) => {
+const loadTodayShift = async (employeeId) => {
   const today = formatWorkDate(new Date());
   const shifts = await getShiftsInRange({
     startDate: today,
@@ -190,7 +160,7 @@ const loadTodayShift = async (employeeId: string) => {
   });
 
   const matchedShift = (shifts || []).find(
-    (shift: Shift) => shift.employee_id === employeeId,
+    (shift) => shift.employee_id === employeeId,
   );
 
   todayShift.value = matchedShift || null;
@@ -199,7 +169,7 @@ const loadTodayShift = async (employeeId: string) => {
 };
 
 // 更新时间
-let timer: number;
+let timer;
 onMounted(async () => {
   try {
     const currentEmployee = await getCurrentUser();

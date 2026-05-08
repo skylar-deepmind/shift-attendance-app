@@ -38,7 +38,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { faker } from "@faker-js/faker";
 import { insertEmployee } from "@/services/database_crud/apiEmployee.js";
@@ -120,14 +120,14 @@ const fillEmployeeTable = async () => {
 
         successCount += 1;
         statusMsg.value = `进行中... 成功 ${successCount}, 失败 ${failCount}`;
-      } catch (itemErr: any) {
+      } catch (itemErr) {
         failCount += 1;
         console.error(`${profile.employee_id} 失败:`, itemErr.message);
       }
     }
 
     statusMsg.value = `完成！成功 ${successCount}，失败 ${failCount}`;
-  } catch (err: any) {
+  } catch (err) {
     statusMsg.value = "失败: " + err.message;
   } finally {
     loading.value = false;

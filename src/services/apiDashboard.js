@@ -3,22 +3,7 @@ import { getAllEmployees } from "@/services/database_crud/apiEmployee.js";
 import { getLeaveRequestCount, getLeaveRequests } from "@/services/database_crud/apiLeaveRequests.js";
 import { getLocations } from "@/services/database_crud/apiOrganization.js";
 import { getShiftsInRange } from "@/services/database_crud/apiShift.js";
-
-function toISODate(value) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getStartOfWeek(inputDate) {
-  const date = new Date(inputDate);
-  const weekday = (date.getDay() + 6) % 7;
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() - weekday);
-  return date;
-}
+import { getStartOfWeek, toISODate } from "@/shared/utils/date.js";
 
 export async function getDashboardSnapshot() {
   const today = toISODate(new Date());

@@ -39,7 +39,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { faker } from "@faker-js/faker";
 import { signUp } from "@/services/apiAuth.js";
@@ -68,7 +68,7 @@ const batchInsert = async () => {
       await signUp(userData);
     }
     alert(`成功批量插入 ${count.value} 条数据`);
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
     alert("插入失败，请检查 Service Role Key 配置");
   } finally {

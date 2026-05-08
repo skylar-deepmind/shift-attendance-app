@@ -131,161 +131,27 @@
 </template>
 
 <script setup>
-import { getCurrentProfile } from "@/services/apiAuth.js";
+import { useLeaveRequestPage } from "@/features/leave/useLeaveRequestPage.js";
 import {
-  createLeaveRequest,
-  getLeaveRequests,
-  updateLeaveRequest,
-} from "@/services/database_crud/apiLeaveRequests.js";
+  formatLeaveStatus,
+  formatLeaveType,
+  getLeaveStatusBadgeClass,
+} from "@/shared/constants/leave.js";
+import { formatDateRange, formatDateTime } from "@/shared/utils/date.js";
 import NavBar from "@/ui/NavBar.vue";
-import { computed, onMounted, reactive, ref } from "vue";
+const {
+  cancelRequest,
+  durationDays,
+  feedback,
+  form,
+  isLoading,
+  isSubmitting,
+  loadRequests,
+  requests,
+  resetForm,
+  submitRequest,
+} = useLeaveRequestPage();
 
-const isLoading = ref(true);
-const isSubmitting = ref(false);
-const requests = ref([]);
-const profile = ref(null);
-const feedback = reactive({
-  type: "success",
-  message: "",
-});
-
-const form = reactive({
-  leave_type: "annual",
-  start_date: new Date().toISOString().slice(0, 10),
-  end_date: new Date().toISOString().slice(0, 10),
-  reason: "",
-});
-
-const durationDays = computed(() => {
-  const start = new Date(form.start_date);
-  const end = new Date(form.end_date);
-  const diff = end.getTime() - start.getTime();
-
-  if (Number.isNaN(diff) || diff < 0) {
-    return 0;
-  }
-
-  return Math.floor(diff / 86400000) + 1;
-});
-
-onMounted(async () => {
-  await bootPage();
-});
-
-async function bootPage() {
-  isLoading.value = true;
-  feedback.message = "";
-
-  try {
-    profile.value = await getCurrentProfile();
-    await loadRequests();
-  } catch (error) {
-    feedback.type = "error";
-    feedback.message =
-      error instanceof Error ? error.message : "加载请假页面失败。";
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function loadRequests() {
-  if (!profile.value?.employee_id) {
-    requests.value = [];
-    return;
-  }
-
-  requests.value = await getLeaveRequests({
-    employeeId: profile.value.employee_id,
-  });
-}
-
-async function submitRequest() {
-  if (!profile.value?.employee_id) {
-    feedback.type = "error";
-    feedback.message = "当前账号缺少员工信息，无法提交请假。";
-    return;
-  }
-
-  if (durationDays.value <= 0) {
-    feedback.type = "error";
-    feedback.message = "结束日期不能早于开始日期。";
-    return;
-  }
-
-  isSubmitting.value = true;
-  feedback.message = "";
-
-  try {
-    const created = await createLeaveRequest({
-      employee_id: profile.value.employee_id,
-      leave_type: form.leave_type,
-      start_date: form.start_date,
-      end_date: form.end_date,
-      duration_days: durationDays.value,
-      reason: form.reason.trim(),
-      status: "pending",
-    });
-
-    requests.value = [created, ...requests.value];
-    feedback.type = "success";
-    feedback.message = "请假申请已提交，等待管理员审核。";
-    resetForm();
-  } catch (error) {
-    feedback.type = "error";
-    feedback.message =
-      error instanceof Error ? error.message : "提交请假申请失败。";
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
-async function cancelRequest(request) {
-  try {
-    const updated = await updateLeaveRequest(request.id, { status: "cancelled" });
-    requests.value = requests.value.map((item) =>
-      item.id === updated.id ? updated : item,
-    );
-  } catch (error) {
-    feedback.type = "error";
-    feedback.message =
-      error instanceof Error ? error.message : "撤回请假申请失败。";
-  }
-}
-
-function resetForm() {
-  form.leave_type = "annual";
-  form.start_date = new Date().toISOString().slice(0, 10);
-  form.end_date = new Date().toISOString().slice(0, 10);
-  form.reason = "";
-}
-
-function formatLeaveType(value) {
-  if (value === "annual") return "年假";
-  if (value === "sick") return "病假";
-  if (value === "personal") return "事假";
-  if (value === "unpaid") return "无薪假";
-  return "其他";
-}
-
-function formatStatus(value) {
-  if (value === "approved") return "已通过";
-  if (value === "rejected") return "已驳回";
-  if (value === "cancelled") return "已撤回";
-  return "待审批";
-}
-
-function statusClass(value) {
-  if (value === "approved") return "badge-success";
-  if (value === "rejected") return "badge-error";
-  if (value === "cancelled") return "badge-neutral";
-  return "badge-warning";
-}
-
-function formatDateRange(startDate, endDate) {
-  return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-}
-
-function formatDateTime(value) {
-  return new Date(value).toLocaleString();
-}
+const formatStatus = formatLeaveStatus;
+const statusClass = getLeaveStatusBadgeClass;
 </script>
