@@ -259,7 +259,6 @@ const props = defineProps({
     required: true,
   },
 });
-console.log("employees", props.employees);
 const editDialogRef = ref(null);
 const isSaving = ref(false);
 const formError = ref("");

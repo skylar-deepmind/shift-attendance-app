@@ -1,5 +1,6 @@
 <template>
   <section class="min-h-screen bg-base-200">
+    <NavBar title="排班管理" />
     <div class="mx-auto flex max-w-none flex-col gap-6 px-4 py-6 lg:px-6">
       <ShiftToolbar
         v-model:keyword="employeeKeyword"
@@ -65,6 +66,7 @@ import {
   getShiftsInRange,
   updateShift,
 } from "@/services/database_crud/apiShift.js";
+import NavBar from "@/ui/NavBar.vue";
 import { computed, onMounted, ref, watch } from "vue";
 
 const SHIFT_TEMPLATES = [

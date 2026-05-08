@@ -3,6 +3,7 @@ import {
   getCurrentProfile,
   getCurrentUser,
   hasEmployeeRecord,
+  resolveProfileHomeRoute,
 } from "@/services/apiAuth.js";
 
 const router = createRouter({
@@ -29,6 +30,16 @@ const router = createRouter({
       },
     },
     {
+      path: "/dashboard",
+      name: "dashboard",
+      component: () => import("@/views/DashboardView.vue"),
+      meta: {
+        requiresAuth: true,
+        requiresCompletedEmployee: true,
+        requiresAdmin: true,
+      },
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () => import("@/views/ProfileView.vue"),
@@ -38,11 +49,32 @@ const router = createRouter({
       },
     },
     {
+      path: "/my-leave",
+      name: "my-leave",
+      component: () => import("@/views/LeaveRequestsView.vue"),
+      meta: {
+        requiresAuth: true,
+        requiresCompletedEmployee: true,
+      },
+    },
+    {
+      path: "/leave-approval",
+      name: "leave-approval",
+      component: () => import("@/views/LeaveApprovalView.vue"),
+      meta: {
+        requiresAuth: true,
+        requiresCompletedEmployee: true,
+        requiresAdmin: true,
+      },
+    },
+    {
       path: "/employee-management",
       name: "employee-management",
       component: () => import("@/views/EmployeeManagementView.vue"),
       meta: {
         requiresAuth: true,
+        requiresCompletedEmployee: true,
+        requiresAdmin: true,
       },
     },
     {
@@ -52,6 +84,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresCompletedEmployee: true,
+        requiresAdmin: true,
       },
     },
     {
@@ -68,6 +101,7 @@ const router = createRouter({
       component: () => import("@/views/ClockView.vue"),
       meta: {
         requiresAuth: true,
+        requiresCompletedEmployee: true,
       },
     },
     {
@@ -87,6 +121,10 @@ const router = createRouter({
       path: "/404",
       name: "404",
       component: () => import("@/ui/404.vue"),
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      redirect: "/404",
     },
   ],
 });
@@ -117,7 +155,7 @@ router.beforeEach(async (to) => {
   //todo: this logic is a bit redundant with the employee form checks below, consider refactoring
   if (to.meta.guestOnly && user) {
     return hasCompletedEmployee
-      ? { name: "profile" }
+      ? resolveProfileHomeRoute(profile)
       : { name: "employee-form" };
   }
 
@@ -138,11 +176,15 @@ router.beforeEach(async (to) => {
   }
 
   if (to.name === "employee-form" && hasCompletedEmployee) {
-    return { name: "profile" };
+    return resolveProfileHomeRoute(profile);
   }
 
   if (to.meta.requiresCompletedEmployee && !hasCompletedEmployee) {
     return { name: "employee-form" };
+  }
+
+  if (to.meta.requiresAdmin && profile?.role !== "admin") {
+    return { name: "403" };
   }
 
   return true;

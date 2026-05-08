@@ -46,6 +46,7 @@
 import {
   getCurrentProfile,
   hasEmployeeRecord,
+  resolveProfileHomeRoute,
   signIn,
 } from "@/services/apiAuth.js";
 import { ErrorMessage, Field, Form } from "vee-validate";
@@ -73,9 +74,7 @@ async function handleLogin(values) {
       return;
     }
 
-    // router.push({ name: "profile" });
-    //todo 后续改成根据角色来跳转不同的页面
-    router.push({ name: "employee-management" });
+    router.push(resolveProfileHomeRoute(profile));
   } catch (error) {
     errorMessage.value = error.message;
   }

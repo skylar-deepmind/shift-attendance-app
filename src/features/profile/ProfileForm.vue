@@ -1,182 +1,179 @@
 <template>
-  <!-- TODO Profile Form should be managed by admin roles, refactor this later -->
-  <div class="flex justify-center items-center min-h-screen bg-base-200 p-4">
-    <div class="card w-full max-w-2xl bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title text-2xl font-bold mb-6 text-primary">
-          基本信息注册
-        </h2>
+  <section class="min-h-screen bg-base-200">
+    <NavBar title="个人资料" />
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text font-medium">名称/姓名</span>
-              </label>
-              <input
-                v-model="formData.username"
-                type="text"
-                placeholder="请输入"
-                class="input input-bordered w-full focus:input-primary"
-                required
-              />
+    <div class="mx-auto max-w-5xl px-4 py-6 lg:px-6">
+      <div v-if="isLoading" class="rounded-box bg-base-100 py-16 text-center shadow-sm">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+
+      <div v-else class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <article class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm text-base-content/60">账号资料</p>
+              <h1 class="mt-1 text-2xl font-semibold text-base-content">
+                {{ employee?.name || profile?.display_name || "未命名员工" }}
+              </h1>
+              <p class="mt-2 text-sm text-base-content/70">
+                {{ user?.email || "暂无邮箱" }}
+              </p>
             </div>
 
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text font-medium">分类</span>
-              </label>
-              <select
-                v-model="formData.category"
-                class="select select-bordered focus:select-primary"
-                required
-              >
-                <option disabled value="">请选择类型</option>
-                <option value="tech">技术开发</option>
-                <option value="design">艺术设计</option>
-                <option value="life">生活日常</option>
-              </select>
-            </div>
+            <span class="badge badge-outline" :class="roleBadgeClass">
+              {{ roleLabel }}
+            </span>
           </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">选择性别</span>
-            </label>
-            <div class="flex gap-6">
-              <label class="label cursor-pointer flex gap-2">
-                <input
-                  v-model="formData.gender"
-                  type="radio"
-                  value="male"
-                  class="radio radio-primary"
-                />
-                <span class="label-text">男</span>
-              </label>
-              <label class="label cursor-pointer flex gap-2">
-                <input
-                  v-model="formData.gender"
-                  type="radio"
-                  value="female"
-                  class="radio radio-primary"
-                />
-                <span class="label-text">女</span>
-              </label>
-            </div>
+          <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <InfoField label="员工编号" :value="employee?.employee_code || profile?.employee_code" />
+            <InfoField label="联系电话" :value="employee?.phone" />
+            <InfoField label="岗位" :value="employee?.position" />
+            <InfoField label="部门" :value="employee?.departments?.name" />
+            <InfoField label="门店/地点" :value="employee?.locations?.name" />
+            <InfoField label="入职日期" :value="formatDate(employee?.joined_at)" />
+            <InfoField label="用工类型" :value="formatEmploymentType(employee?.employment_type)" />
+            <InfoField label="员工状态" :value="formatStatus(employee?.status)" />
           </div>
+        </article>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">个人简介/描述</span>
-            </label>
-            <textarea
-              v-model="formData.bio"
-              class="textarea textarea-bordered h-24 focus:textarea-primary"
-              placeholder="介绍一下你自己..."
-            ></textarea>
-          </div>
+        <article class="rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+          <p class="text-sm text-base-content/60">使用建议</p>
+          <h2 class="mt-1 text-xl font-semibold text-base-content">下一步操作</h2>
 
-          <div class="form-control w-full">
-            <label class="label">
-              <span class="label-text font-medium">上传头像</span>
-            </label>
-            <input
-              @change="handleFileChange"
-              type="file"
-              class="file-input file-input-bordered file-input-primary w-full"
-            />
-          </div>
-
-          <div class="divider">偏好设置</div>
-
-          <div class="form-control">
-            <label class="label cursor-pointer">
-              <span class="label-text font-medium">接收邮件通知</span>
-              <input
-                v-model="formData.notifications"
-                type="checkbox"
-                class="toggle toggle-primary"
-              />
-            </label>
-          </div>
-
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <input
-                v-model="formData.agreement"
-                type="checkbox"
-                class="checkbox checkbox-sm checkbox-primary"
-                required
-              />
-              <span class="label-text text-xs"
-                >我已阅读并同意《服务协议》与《隐私保护指引》</span
-              >
-            </label>
-          </div>
-
-          <div class="card-actions justify-end mt-4">
+          <div class="mt-5 space-y-3">
+            <button class="btn btn-primary w-full justify-start" type="button" @click="goPrimary">
+              {{ primaryActionLabel }}
+            </button>
             <button
-              type="submit"
-              class="btn btn-primary w-full md:w-32"
-              :disabled="isSubmitting"
+              v-if="isAdmin"
+              class="btn btn-outline w-full justify-start"
+              type="button"
+              @click="router.push({ name: 'leave-approval' })"
             >
-              <span v-if="isSubmitting" class="loading loading-spinner"></span>
-              提交
+              查看请假审批
+            </button>
+            <button
+              v-else
+              class="btn btn-outline w-full justify-start"
+              type="button"
+              @click="router.push({ name: 'my-leave' })"
+            >
+              查看我的请假
             </button>
           </div>
-        </form>
+
+          <div v-if="errorMessage" class="alert alert-error mt-5 text-sm">
+            {{ errorMessage }}
+          </div>
+
+          <div class="mt-6 rounded-lg bg-base-200 p-4 text-sm text-base-content/70">
+            <p>当前页面展示的是员工主数据和账号角色。</p>
+            <p class="mt-2">
+              后续如果要支持员工自己修改资料，建议只开放手机号、紧急联系人等字段，岗位和门店继续由管理员维护。
+            </p>
+          </div>
+        </article>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
-<style scoped>
-/* 这里可以根据需要添加额外的微调样式 */
-</style>
-<script setup lang="ts">
-import { ref, reactive } from "vue";
+<script setup>
+import { getCurrentProfile, getCurrentUser, resolveProfileHomeRoute } from "@/services/apiAuth.js";
+import { getEmployeeById } from "@/services/database_crud/apiEmployee.js";
+import NavBar from "@/ui/NavBar.vue";
+import { computed, defineComponent, h, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-// 定义表单数据类型
-interface FormData {
-  username: string;
-  category: string;
-  bio: string;
-  notifications: boolean;
-  gender: "male" | "female" | "other" | "";
-  avatar: File | null;
-  agreement: boolean;
-}
+const router = useRouter();
+const isLoading = ref(true);
+const errorMessage = ref("");
+const user = ref(null);
+const profile = ref(null);
+const employee = ref(null);
 
-// 初始化响应式数据
-const formData = reactive<FormData>({
-  username: "",
-  category: "",
-  bio: "",
-  notifications: true,
-  gender: "",
-  avatar: null,
-  agreement: false,
+const isAdmin = computed(() => profile.value?.role === "admin");
+const roleLabel = computed(() => (isAdmin.value ? "管理员" : "员工"));
+const roleBadgeClass = computed(() =>
+  isAdmin.value ? "badge-primary" : "badge-ghost",
+);
+const primaryActionLabel = computed(() =>
+  isAdmin.value ? "进入管理 Dashboard" : "进入今日打卡",
+);
+
+onMounted(async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    const [currentUser, currentProfile] = await Promise.all([
+      getCurrentUser(),
+      getCurrentProfile(),
+    ]);
+
+    user.value = currentUser;
+    profile.value = currentProfile;
+
+    if (currentProfile?.employee_id) {
+      employee.value = await getEmployeeById(currentProfile.employee_id);
+    }
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "加载个人资料失败。";
+  } finally {
+    isLoading.value = false;
+  }
 });
 
-const isSubmitting = ref(false);
+function goPrimary() {
+  router.push(resolveProfileHomeRoute(profile.value));
+}
 
-// 处理文件上传
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    formData.avatar = target.files[0];
+function formatDate(value) {
+  if (!value) {
+    return "未设置";
   }
-};
 
-// 提交表单
-const handleSubmit = async () => {
-  isSubmitting.value = true;
-  // 模拟异步请求
-  console.log("提交的数据：", formData);
+  return new Date(value).toLocaleDateString();
+}
 
-  setTimeout(() => {
-    isSubmitting.value = false;
-    alert("提交成功！");
-  }, 1500);
-};
+function formatEmploymentType(type) {
+  if (type === "full_time") return "全职";
+  if (type === "part_time") return "兼职";
+  if (type === "contract") return "合同工";
+  return type || "未设置";
+}
+
+function formatStatus(status) {
+  if (status === "active") return "在职";
+  if (status === "inactive") return "停用";
+  if (status === "resigned") return "离职";
+  return status || "未设置";
+}
+
+const InfoField = defineComponent({
+  name: "InfoField",
+  props: {
+    label: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: String,
+      default: "",
+    },
+  },
+  setup(props) {
+    return () =>
+      h("div", { class: "rounded-lg bg-base-200 p-4" }, [
+        h("p", { class: "text-xs text-base-content/60" }, props.label),
+        h(
+          "p",
+          { class: "mt-2 text-sm font-medium text-base-content" },
+          props.value || "未设置",
+        ),
+      ]);
+  },
+});
 </script>

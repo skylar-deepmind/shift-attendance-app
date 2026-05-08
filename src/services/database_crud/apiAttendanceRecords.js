@@ -26,3 +26,70 @@ export async function insertAttendanceRecord(record) {
 
   return data;
 }
+
+export async function getAttendanceRecords({
+  employeeId,
+  startDate,
+  endDate,
+  locationId,
+}) {
+  let query = supabase
+    .from("attendance_records")
+    .select("*, employees(id, name, employee_code), shifts(location_id)")
+    .order("work_date", { ascending: false })
+    .order("clock_in_at", { ascending: false });
+
+  if (employeeId) {
+    query = query.eq("employee_id", employeeId);
+  }
+
+  if (startDate) {
+    query = query.gte("work_date", startDate);
+  }
+
+  if (endDate) {
+    query = query.lte("work_date", endDate);
+  }
+
+  if (locationId) {
+    query = query.eq("shifts.location_id", locationId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to fetch attendance records: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function getAttendanceCountByStatus({
+  startDate,
+  endDate,
+  statuses,
+}) {
+  let query = supabase
+    .from("attendance_records")
+    .select("*", { count: "exact", head: true });
+
+  if (startDate) {
+    query = query.gte("work_date", startDate);
+  }
+
+  if (endDate) {
+    query = query.lte("work_date", endDate);
+  }
+
+  if (statuses?.length) {
+    query = query.in("status", statuses);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to count attendance records: ${error.message}`);
+  }
+
+  return count || 0;
+}

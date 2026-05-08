@@ -1,5 +1,6 @@
 <template>
   <section class="min-h-screen bg-base-200">
+    <NavBar title="员工管理" />
     <div class="mx-auto flex max-w-none flex-col gap-6 px-4 py-6 lg:px-6">
       <ToolBar
         v-model:filters="filters"
@@ -30,6 +31,7 @@ import {
   getDepartments,
   getLocations,
 } from "@/services/database_crud/apiOrganization.js";
+import NavBar from "@/ui/NavBar.vue";
 import ToolBar from "@/ui/ToolBar.vue";
 import { computed, onMounted, ref } from "vue";
 

@@ -85,6 +85,14 @@ export async function signIn(email, password) {
   return data;
 }
 
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
 
@@ -154,4 +162,12 @@ export async function ensureProfileEmployeeId(profile) {
   const employeeId = generateEmployeeId();
   await updateProfile(profile.id, { employee_id: employeeId });
   return employeeId;
+}
+
+export function resolveProfileHomeRoute(profile) {
+  if (profile?.role === "admin") {
+    return { name: "dashboard" };
+  }
+
+  return { name: "clock" };
 }

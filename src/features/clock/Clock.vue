@@ -4,7 +4,7 @@
       <div class="stat text-center">
         <div class="stat-title text-sm">当前时间</div>
         <div class="stat-value text-primary text-4xl">{{ currentTime }}</div>
-        <div class="stat-desc mt-2">2026年4月29日 | 星期三</div>
+        <div class="stat-desc mt-2">{{ currentDateLabel }}</div>
       </div>
     </div>
 
@@ -105,6 +105,14 @@ type Shift = {
 // 模拟状态：0-未打卡, 1-已上班, 2-已下班
 const status = ref(0);
 const currentTime = ref(new Date().toLocaleTimeString());
+const currentDateLabel = ref(
+  new Date().toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  }),
+);
 const logs = ref<{ time: string; type: string }[]>([]);
 const todayShift = ref<Shift | null>(null);
 const canClockToday = ref(true);
@@ -215,6 +223,12 @@ onMounted(async () => {
 
   timer = window.setInterval(() => {
     currentTime.value = new Date().toLocaleTimeString();
+    currentDateLabel.value = new Date().toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    });
   }, 1000);
 });
 onUnmounted(() => {

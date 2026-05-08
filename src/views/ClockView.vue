@@ -1,5 +1,5 @@
 <template>
-  <NavBar title="Clock View" />
+  <NavBar title="今日打卡" />
   <Clock />
 </template>
 

@@ -4,6 +4,7 @@ import {
   getCurrentProfile,
   getCurrentUser,
   hasEmployeeRecord,
+  resolveProfileHomeRoute,
 } from "@/services/apiAuth.js";
 import { insertEmployee } from "@/services/database_crud/apiEmployee.js";
 import {
@@ -41,6 +42,7 @@ const currentProfileId = ref("");
 const reservedEmployeeId = ref("");
 const departments = ref<OptionItem[]>([]);
 const locations = ref<OptionItem[]>([]);
+const currentProfile = ref<any>(null);
 
 const formData = reactive<FormData>({
   employee_code: "",
@@ -73,8 +75,10 @@ onMounted(async () => {
       throw new Error("Profile not found. Please sign up again.");
     }
 
+    currentProfile.value = profile;
+
     if (await hasEmployeeRecord(profile.employee_id)) {
-      router.push({ name: "profile" });
+      router.push(resolveProfileHomeRoute(profile));
       return;
     }
 
@@ -128,11 +132,9 @@ async function handleSubmit() {
     }
 
     successMessage.value = "Employee profile completed. Redirecting...";
-
-    //todo：redirect to employee profile page after a short delay to show success message
-    // setTimeout(() => {
-    //   router.push({ name: "profile" });
-    // }, 800);
+    setTimeout(() => {
+      router.push(resolveProfileHomeRoute(currentProfile.value));
+    }, 800);
   } catch (error) {
     errorMessage.value =
       error instanceof Error
